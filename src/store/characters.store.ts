@@ -10,11 +10,24 @@ interface Store {
         hasError: boolean;
         errorMessage: string | null;
     },
+    ids: {
+        list: {
+            [id: string]: Characters
+        }
+        isLoading: boolean;
+        hasError: boolean;
+        errorMessage: string | null;
+    },
 
-    //Metodos
+    //Metodos de Characters
     startLoadingCharacters: () => void;
     loadedCharacters: ( data: Characters[] ) => void;
     loadedCharactersFailed: ( error: string ) => void;
+
+    //Metodos de Characters por IDs
+    startLoadingCharacter: () => void;
+    checkIdInStore: ( id: string ) => boolean;
+    loadedCharacter: ( character: Characters ) => void;
 }
 
 //Initial state
@@ -27,7 +40,14 @@ const characterStore = reactive<Store>({
         list: []
     },
 
-    //Metodos
+    ids: {
+        list: {},
+        isLoading: false,
+        hasError: false,
+        errorMessage: null,
+    },
+
+    //Metodos de Characters
     async startLoadingCharacters(){
         const { data } = await rickAndMortyApi.get<Character>('/character');
         
@@ -52,6 +72,26 @@ const characterStore = reactive<Store>({
             list: []
         }
     },
+
+        //Metodos de Characters por IDs
+    startLoadingCharacter() {
+        this.ids = {
+            ...this.ids,
+            isLoading: true,
+            hasError: false,
+            errorMessage: null
+        }
+    },
+    checkIdInStore( id: string ) {
+        // doble negacion para convertirlo en boolean
+        //con ! solo si existe devuelve un false
+        //la negacion de un false es tru
+        return !!this.ids.list[id]
+    },
+    loadedCharacter( character: Characters ) {
+        this.ids.isLoading = false;
+        this.ids.list[character.id] = character;
+    }
 })
 
 characterStore.startLoadingCharacters()
